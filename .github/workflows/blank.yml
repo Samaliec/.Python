@@ -1,4 +1,82 @@
-import requests
+import psutil
+import ctypes
+import os
+import time
+from threading import Thread
+
+# Определение приоритетных уровней памяти и CPU
+PRIORITY_THRESHOLD_CPU = 75  # Уровень загрузки CPU для приоритетного использования
+PRIORITY_THRESHOLD_MEMORY = 75  # Уровень памяти для приоритетного использования
+
+# Инициируем работу с низкоуровневыми функциями через ctypes для доступа к системной памяти
+libc = ctypes.CDLL("libc.so.6")
+
+# Функция для мониторинга использования CPU
+def monitor_cpu():
+    while True:
+        cpu_usage = psutil.cpu_percent(interval=1)
+        if cpu_usage > PRIORITY_THRESHOLD_CPU:
+            optimize_cpu_usage()
+        time.sleep(0.5)
+
+# Функция для мониторинга использования памяти
+def monitor_memory():
+    while True:
+        memory_info = psutil.virtual_memory()
+        if memory_info.percent > PRIORITY_THRESHOLD_MEMORY:
+            optimize_memory_usage()
+        time.sleep(0.5)
+
+# Оптимизация использования CPU
+def optimize_cpu_usage():
+    # Пример динамической оптимизации CPU путем управления приоритетами процессов
+    os.nice(-10)  # Устанавливаем более высокий приоритет текущему процессу
+    print("CPU optimization: High priority set for process.")
+
+# Оптимизация использования памяти
+def optimize_memory_usage():
+    # Оптимизация памяти путем очистки кэша или временных данных
+    libc.malloc_trim(0)
+    print("Memory optimization: Cleared unused memory.")
+
+# Управление запуском процессов для обработки данных в многопоточном режиме
+def process_data_in_threads():
+    threads = []
+    for _ in range(5):  # Запуск 5 потоков для параллельной обработки
+        thread = Thread(target=process_data)
+        threads.append(thread)
+        thread.start()
+    
+    for thread in threads:
+        thread.join()
+
+# Основная функция обработки данных
+def process_data():
+    # Логика обработки данных с доступом к системной памяти
+    data = ctypes.create_string_buffer(b"Data for Lilit AI")  # Создание буфера в памяти
+    print("Processing data:", data.value)
+
+    # Эмуляция ресурсоемкой обработки данных
+    for i in range(1000000):
+        _ = i * i
+
+# Основной запуск всех процессов и мониторинга
+def main():
+    # Запуск мониторинга CPU и памяти в отдельных потоках
+    cpu_thread = Thread(target=monitor_cpu)
+    memory_thread = Thread(target=monitor_memory)
+    cpu_thread.start()
+    memory_thread.start()
+    
+    # Инициируем процесс обработки данных
+    process_data_in_threads()
+    
+    # Завершаем потоки мониторинга при завершении обработки данных
+    cpu_thread.join()
+    memory_thread.join()
+
+if __name__ == "__main__":
+    main()import requests
 import json
 
 class CloudIntellect:
